@@ -99,33 +99,14 @@ namespace BetterActivateSprinklers
 
         private void ActivateVanillaSprinkler(StardewValley.Object sprinkler)
         {
-            Vector2 sprinklerTile = sprinkler.TileLocation;
-            if (sprinkler.Name.Contains("Quality"))
+            if (!sprinkler.IsSprinkler()) return;
+
+            foreach (Vector2 current in sprinkler.GetSprinklerTiles())
             {
-                Vector2[] coverage = Utility.getSurroundingTileLocationsArray(sprinklerTile);
-                foreach (Vector2 v in coverage)
-                {
-                    WaterTile(v);
-                }
+                sprinkler.ApplySprinkler(Game1.currentLocation, current);
             }
-            else if (sprinkler.Name.Contains("Iridium"))
-            {
-                for (int i = (int)sprinklerTile.X - 2; (float)i <= sprinklerTile.X + 2f; i++)
-                {
-                    for (int j = (int)sprinklerTile.Y - 2; (float)j <= sprinklerTile.Y + 2f; j++)
-                    {
-                        Vector2 v = new Vector2((float)i, (float)j);
-                        WaterTile(v);
-                    }
-                }
-            }
-            else
-            {
-                foreach (Vector2 v in Utility.getAdjacentTileLocations(sprinklerTile))
-                {
-                    WaterTile(v);
-                }
-            }
+
+            ApplySprinklerAnimation(Game1.currentLocation, sprinkler);
         }
 
         private void ActivateBetterSprinkler(StardewValley.Object sprinkler)
@@ -202,6 +183,66 @@ namespace BetterActivateSprinklers
             if (Game1.currentLocation.terrainFeatures.TryGetValue(tile, out terrainFeature) && (hoeDirt = terrainFeature as HoeDirt) != null)
             {
                 hoeDirt.state.Value = 1;
+            }
+        }
+
+        public void ApplySprinklerAnimation(GameLocation location, StardewValley.Object sprinkler)
+        {
+            int radius = sprinkler.GetModifiedRadiusForSprinkler();
+            if (radius >= 0)
+            {
+                int delay = 0;
+                int numberOfLoops = 6;
+                switch (radius)
+                {
+                    case 0:
+                        {
+                            location.temporarySprites.Add(new TemporaryAnimatedSprite(29, sprinkler.tileLocation.Value * 64f + new Vector2(0f, -48f), Color.White * 0.5f, 4, flipped: false, 60f, numberOfLoops)
+                            {
+                                delayBeforeAnimationStart = delay,
+                                id = sprinkler.tileLocation.X * 4000f + sprinkler.tileLocation.Y
+                            });
+                            location.temporarySprites.Add(new TemporaryAnimatedSprite(29, sprinkler.tileLocation.Value * 64f + new Vector2(48f, 0f), Color.White * 0.5f, 4, flipped: false, 60f, numberOfLoops)
+                            {
+                                rotation = (float)Math.PI / 2f,
+                                delayBeforeAnimationStart = delay,
+                                id = sprinkler.tileLocation.X * 4000f + sprinkler.tileLocation.Y
+                            });
+                            location.temporarySprites.Add(new TemporaryAnimatedSprite(29, sprinkler.tileLocation.Value * 64f + new Vector2(0f, 48f), Color.White * 0.5f, 4, flipped: false, 60f, numberOfLoops)
+                            {
+                                rotation = (float)Math.PI,
+                                delayBeforeAnimationStart = delay,
+                                id = sprinkler.tileLocation.X * 4000f + sprinkler.tileLocation.Y
+                            });
+                            location.temporarySprites.Add(new TemporaryAnimatedSprite(29, sprinkler.tileLocation.Value * 64f + new Vector2(-48f, 0f), Color.White * 0.5f, 4, flipped: false, 60f, numberOfLoops)
+                            {
+                                rotation = 4.712389f,
+                                delayBeforeAnimationStart = delay,
+                                id = sprinkler.tileLocation.X * 4000f + sprinkler.tileLocation.Y
+                            });
+                            break;
+                        }
+                    case 1:
+                        location.temporarySprites.Add(new TemporaryAnimatedSprite("TileSheets\\animations", new Microsoft.Xna.Framework.Rectangle(0, 1984, 192, 192), 60f, 3, numberOfLoops, sprinkler.tileLocation.Value * 64f + new Vector2(-64f, -64f), flicker: false, flipped: false)
+                        {
+                            color = Color.White * 0.4f,
+                            delayBeforeAnimationStart = delay,
+                            id = sprinkler.tileLocation.X * 4000f + sprinkler.tileLocation.Y
+                        });
+                        break;
+                    default:
+                        {
+                            float scale = (float)radius / 2f;
+                            location.temporarySprites.Add(new TemporaryAnimatedSprite("TileSheets\\animations", new Microsoft.Xna.Framework.Rectangle(0, 2176, 320, 320), 60f, 4, numberOfLoops, sprinkler.tileLocation.Value * 64f + new Vector2(32f, 32f) + new Vector2(-160f, -160f) * scale, flicker: false, flipped: false)
+                            {
+                                color = Color.White * 0.4f,
+                                delayBeforeAnimationStart = delay,
+                                id = sprinkler.tileLocation.X * 4000f + sprinkler.tileLocation.Y,
+                                scale = scale
+                            });
+                            break;
+                        }
+                }
             }
         }
     }
