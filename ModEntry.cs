@@ -105,6 +105,8 @@ namespace BetterActivateSprinklers
             {
                 sprinkler.ApplySprinkler(Game1.currentLocation, current);
             }
+
+            ApplySprinklerAnimation(Game1.currentLocation, sprinkler);
         }
 
         private void ActivateBetterSprinkler(StardewValley.Object sprinkler)
@@ -181,6 +183,66 @@ namespace BetterActivateSprinklers
             if (Game1.currentLocation.terrainFeatures.TryGetValue(tile, out terrainFeature) && (hoeDirt = terrainFeature as HoeDirt) != null)
             {
                 hoeDirt.state.Value = 1;
+            }
+        }
+
+        public void ApplySprinklerAnimation(GameLocation location, StardewValley.Object sprinkler)
+        {
+            int radius = sprinkler.GetModifiedRadiusForSprinkler();
+            if (radius >= 0)
+            {
+                int delay = 0;
+                int numberOfLoops = 6;
+                switch (radius)
+                {
+                    case 0:
+                        {
+                            location.temporarySprites.Add(new TemporaryAnimatedSprite(29, sprinkler.tileLocation.Value * 64f + new Vector2(0f, -48f), Color.White * 0.5f, 4, flipped: false, 60f, numberOfLoops)
+                            {
+                                delayBeforeAnimationStart = delay,
+                                id = sprinkler.tileLocation.X * 4000f + sprinkler.tileLocation.Y
+                            });
+                            location.temporarySprites.Add(new TemporaryAnimatedSprite(29, sprinkler.tileLocation.Value * 64f + new Vector2(48f, 0f), Color.White * 0.5f, 4, flipped: false, 60f, numberOfLoops)
+                            {
+                                rotation = (float)Math.PI / 2f,
+                                delayBeforeAnimationStart = delay,
+                                id = sprinkler.tileLocation.X * 4000f + sprinkler.tileLocation.Y
+                            });
+                            location.temporarySprites.Add(new TemporaryAnimatedSprite(29, sprinkler.tileLocation.Value * 64f + new Vector2(0f, 48f), Color.White * 0.5f, 4, flipped: false, 60f, numberOfLoops)
+                            {
+                                rotation = (float)Math.PI,
+                                delayBeforeAnimationStart = delay,
+                                id = sprinkler.tileLocation.X * 4000f + sprinkler.tileLocation.Y
+                            });
+                            location.temporarySprites.Add(new TemporaryAnimatedSprite(29, sprinkler.tileLocation.Value * 64f + new Vector2(-48f, 0f), Color.White * 0.5f, 4, flipped: false, 60f, numberOfLoops)
+                            {
+                                rotation = 4.712389f,
+                                delayBeforeAnimationStart = delay,
+                                id = sprinkler.tileLocation.X * 4000f + sprinkler.tileLocation.Y
+                            });
+                            break;
+                        }
+                    case 1:
+                        location.temporarySprites.Add(new TemporaryAnimatedSprite("TileSheets\\animations", new Microsoft.Xna.Framework.Rectangle(0, 1984, 192, 192), 60f, 3, numberOfLoops, sprinkler.tileLocation.Value * 64f + new Vector2(-64f, -64f), flicker: false, flipped: false)
+                        {
+                            color = Color.White * 0.4f,
+                            delayBeforeAnimationStart = delay,
+                            id = sprinkler.tileLocation.X * 4000f + sprinkler.tileLocation.Y
+                        });
+                        break;
+                    default:
+                        {
+                            float scale = (float)radius / 2f;
+                            location.temporarySprites.Add(new TemporaryAnimatedSprite("TileSheets\\animations", new Microsoft.Xna.Framework.Rectangle(0, 2176, 320, 320), 60f, 4, numberOfLoops, sprinkler.tileLocation.Value * 64f + new Vector2(32f, 32f) + new Vector2(-160f, -160f) * scale, flicker: false, flipped: false)
+                            {
+                                color = Color.White * 0.4f,
+                                delayBeforeAnimationStart = delay,
+                                id = sprinkler.tileLocation.X * 4000f + sprinkler.tileLocation.Y,
+                                scale = scale
+                            });
+                            break;
+                        }
+                }
             }
         }
     }
